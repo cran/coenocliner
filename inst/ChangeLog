@@ -1,0 +1,92 @@
+coencliner Change Log
+
+Version 0.1-0
+
+	* Released to CRAN...
+
+Version 0.0-10
+
+	* Gaussian: default for `corr` changed to `0` so users don't
+	need to specify this unless they want correlated responses.
+
+	* vignette: added a basic tutorial vignette document to the
+	package.
+
+	* BetaBinomial: realised I should have asked Jari for
+	permission to copy code to compute the parameters of the
+	beta distribution from a parameter tau^2. This came from his
+	BETASIMU C code. I've temporarily removed this code until such
+	a time as I get permission to include it (Jari is in the field).
+	I've replaced it with a different parameterisation I found in
+	Ben Bolker's Ecological Models and Data in R book.
+
+Version 0.0-9
+
+	* ZIP, ZINB: new wrappers for random number generation for the
+	zero-inflated Poisson (ZIP) and Negative binomial (ZINB)
+	distributions. These functions are simple ZIP and ZINB
+	distributions where the probability of a zero from the binomial
+	part of the model depends only on a mean probability of zero.
+
+Version 0.0-8
+
+	* Binomial, BetaBinomial: New wrappers for random number
+	generation for the Binomial and Beta-Binomial distributions.
+	The Binomial distribution allows simulation of binomial counts
+	from a probability of occurence and binomial denominator, m,
+	the number of trials (number of individuals counted).
+
+	The Beta-Binomial() is an extra-variance Binomial distribution
+	and allows simulation of overdispersed binomial count data in a
+	manner similar to that by which the Negative binomial
+	distribution can be used to generate overdispersed Poisson
+	count data.
+
+Version 0.0-7
+
+	* Beta: now implemented for one or two gradients.
+
+Version 0.0-6
+
+	* Binomial(): this really should have been Bernoulli and now is.
+
+Version 0.0-5
+
+	* Old code: This version removed all the `simxDfoo()` functions
+	and associated helpers (`betaResponse()`, `gaussianResponse()`,
+	`biGaussianResponse()`, `expandGauss()`, `expandBeta()`) as
+	these are now no longer needed given that we have `coenocline()`
+	as a gneral interface to all these things.
+
+Version 0.0-4
+
+	* Gaussian() & Beta() modified to take lists of arguments, `px`
+	and `py`, to simplify the naming of species parameters in these
+	models.
+
+	* coenocline() modified to supply arguments in the format now
+	required by `Gaussian()` and `Beta()`.
+
+Version 0.0-3
+
+	* coenocline() a generic interface to coenocline simulation.
+
+	* Beta(), Gaussian(); new response model functions for the
+	classic Gaussian response model and the generalised Beta
+	response model.
+
+	* New wrappers for random deviate generation from Poisson,
+	Binomial, and Negative binomial distributions.
+
+	* expand() a new general version of the expand.grid()-like
+	functionality where we repeat sets of parameters for each of
+	n gradient locations.
+
+Version 0.0-2
+
+	* added simulators for occurrence not abundance
+	Code provided by F. Rodriguez-Sanchez.
+
+Version 0.0-1
+
+	* intial alpha version
