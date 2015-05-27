@@ -2,7 +2,7 @@
 
 ## Load packages
 library("testthat")
-library_if_available("coenocliner")
+library("coenocliner")
 
 context("Testing coenocline() functionality")
 
@@ -20,6 +20,7 @@ sim <- coenocline(x,
                   countModel = "poisson")
 
 test_that("coenocline() returns an integer matrix", {
+    expect_that(sim, is_a("coenocline"))
     expect_that(sim, is_a("matrix"))
     expect_that(typeof(sim) == "integer", is_true())
 })
@@ -49,6 +50,7 @@ sim <- coenocline(cbind(x, y),
                   countModel = "poisson")
 
 test_that("coenocline() returns an integer matrix with x and y gradients", {
+    expect_that(sim, is_a("coenocline"))
     expect_that(sim, is_a("matrix"))
     expect_that(typeof(sim) == "integer", is_true())
 })
@@ -71,6 +73,7 @@ test_that("coenocline() works with parameters as lists", {
                        params = lp,
                        countModel = "poisson")
 
+    expect_that(sim2, is_a("coenocline"))
     expect_that(sim2, is_a("matrix"))
     expect_that(NCOL(sim2), equals(length(opt)))
     expect_that(NROW(sim2), equals(length(x)))
@@ -87,6 +90,7 @@ test_that("coenocline() works with gradient values supplied as a list", {
                        params = lp,
                        countModel = "poisson")
 
+    expect_that(sim3, is_a("coenocline"))
     expect_that(sim3, is_a("matrix"))
     expect_that(NCOL(sim3), equals(length(opt)))
     expect_that(NROW(sim3), equals(length(x)))

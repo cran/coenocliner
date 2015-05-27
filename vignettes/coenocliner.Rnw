@@ -72,12 +72,14 @@ There's a long history of using computers to simulate species abundance data alo
   \item Beta-binomial
   \item Zero-inflated Poisson (ZIP)
   \item Zero-inflated negative binomial (ZINB)
+  \item Zero-inflated Binomial (ZIB)
+  \item Zero-inflated Beta-Binomial (ZIBB)
 \end{itemize}
 
 This vignette provides a brief overview of the \pkg{coenocliner} package.
 
 \section[A brief overview of coenocliner]{A brief overview of \pkg{coenocliner}}
-To begin, load \pkg{coenocliner} and check the start-up message to see if you are using the current (0.1-0) release of the package
+To begin, load \pkg{coenocliner} and check the start-up message to see if you are using the current (\Sexpr{packageVersion("coenocliner")}) release of the package
 <<load-library>>=
 library("coenocliner")
 @
@@ -127,12 +129,12 @@ Note that parameter $h$ is not specified in the second set as this parameter, th
 
 Notice also how parameters are specified at the species level. To evaluate the response curve at the supplied gradient locations each set of parameters needs to be repeated for each gradient location. Thankfully \texttt{coenocline()} takes care of this detail for us.
 
-Additional parameters that may be needed for the response model but which are not specified at the species level are supplied as a list with named components to argument \code{extraParams}. An example is the correlation between Gaussian response curves in case of two gradients. This, unfortunately, means that a single correlation between response curves applies to all species\footnote{This is not strictly true as you can work out how the species parameters are replicated relative to gradient values and hence pass a vector of the correct length with the species-specific values included. Study the outputs from \texttt{expand()} when supplied gradient locations and parameters to work out how to specify \texttt{extraParams} appropriately}, and is caused by a poor choice of implementation. Thankfully this is relatively easy to fix, which will be done for version 0.2-0 along with a fix for a similar issue relating to the statement of additional parameters for the error distribution used (see below).
+Additional parameters that may be needed for the response model but which are not specified at the species level are supplied as a list with named components to argument \texttt{extraParams}. An example is the correlation between Gaussian response curves in case of two gradients. This, unfortunately, means that a single correlation between response curves applies to all species\footnote{This is not strictly true as you can work out how the species parameters are replicated relative to gradient values and hence pass a vector of the correct length with the species-specific values included. Study the outputs from \texttt{expand()} when supplied gradient locations and parameters to work out how to specify \texttt{extraParams} appropriately}, and is caused by a poor choice of implementation. Thankfully this is relatively easy to fix, which will be done for version 0.3-0 along with a fix for a similar issue relating to the statement of additional parameters for the error distribution used (see below).
 
 To simulate realistic count data we need to sample \textit{with error} from the parameterised species response curves. Which of the distributions (listed earlier) is used is specified via argument \texttt{countModel}; available options are
 
 <<count-models, echo = FALSE>>=
-c("poisson", "negbin", "bernoulli", "binary", "binomial", "betabinomial", "ZIP", "ZINB")
+c("poisson", "negbin", "bernoulli", "binary", "binomial", "betabinomial", "ZIP", "ZINB", "ZIB", "ZIBB")
 @
 
 Some of these distributions (all bar \texttt{"poisson"} and \texttt{"bernoulli"}) require additional arguments, such as the $\alpha$ parameter for (one parameterisation of) the negative binomial distribution. These arguments are supplied as a list with named components. Again, due to the same implementation snafu as for \texttt{extraParams}, such parameters act globally for all species\footnote{Again, this is not strictly true as you can work out how the species parameters are replicated relative to gradient values and hence pass a vector of the correct length with the species-specific values included. Study the outputs from \texttt{expand()} when supplied gradient locations and parameters to work out how to specify \texttt{countParams} appropriately}.
@@ -169,16 +171,16 @@ This returns a matrix of values obtained by evaluating each species response cur
 <<example1-head-expectations>>=
 class(mu)
 dim(mu)
-head(mu[, 1:6])
+mu
 @
 
-A quick way to visualise the parameterised species response is to use \texttt{matplot()}\footnote{until such a time as the \pkg{coenocliner} has a \texttt{plot} method...}
+A quick way to visualise the parameterised species response is to use the \texttt{plot()} method
 
 <<example1-plot-expectations, fig.cap = "Gaussian species response curves along a hypothetical pH gradient", fig.height = 5>>=
-matplot(locs, mu, lty = "solid", type = "l", xlab = "pH", ylab = "Abundance")
+plot(mu, lty = "solid", type = "l", xlab = "pH", ylab = "Abundance")
 @
 
-The resultant plot is shown in Figure~\ref{example1-plot-expectations}.
+The resultant plot is shown in Figure~\ref{fig:example1-plot-expectations}.
 
 As this looks OK, we can simulate some count data. The simplest model for doing so is to make random draws from a Poisson distribution with the mean, $\lambda$, for each species set to value of the response curve evaluated at each gradient location. Hence the values in \texttt{mu} that we just created can be thought of as the expected count per species at each of the gradient locations we are interested in. To simulate Poisson count data, use \texttt{expectation = FALSE} or remove this argument from the call. To be more explicit, we should also state \texttt{countModel = "poisson"}\footnote{\texttt{countModel = "poisson"} is the default so this can be excluded from the call.}.
 
@@ -190,11 +192,11 @@ simp <- coenocline(locs, responseModel = "gaussian", params = pars,
 Again, \texttt{matplot} is useful in visualizing the simulated data
 
 <<example1-plot-simulations, fig.cap = "Simulated species abundances with Poisson errors from Gaussian response curves along a hypothetical pH gradient", fig.height = 5>>=
-matplot(locs, simp, lty = "solid", type = "p", pch = 1:10, cex = 0.8,
-        xlab = "pH", ylab = "Abundance")
+plot(simp, lty = "solid", type = "p", pch = 1:10, cex = 0.8,
+     xlab = "pH", ylab = "Abundance")
 @
 
-The resultant plot is shown in Figure~\ref{example1-plot-simulations}.
+The resultant plot is shown in Figure~\ref{fig:example1-plot-simulations}.
 
 Whilst the simulated counts look reasonable and follow the response curves in Figure~\ref{fig:example1-plot-expectations} there is a problem; the variation around the expected curves is too small. This is due to the error variance implied by the Poisson distribution encapsulating only that variance which would arise due to repeated sampling at the gradient locations. Most species abundance data exhibit much larger degrees of variation than that shown in Figure~\ref{fig:example1-plot-simulations}. A solution to this is to sample from a distribution that incorporates additional variance or \textit{overdispersion}. A natural partner to the Poisson that includes overdispersion is the negative binomial. To simulate count data using the negative binomial distribution we must alter \texttt{countModel} and supply the overdispersion parameter $\alpha$ to use\footnote{Recall that this is only easily specifiable globally in version 0.1-0 of \pkg{coenocliner}.} via \texttt{countParams}.
 
@@ -203,11 +205,11 @@ simnb <- coenocline(locs, responseModel = "gaussian", params = pars,
                     countModel = "negbin", countParams = list(alpha = 0.5))
 @
 
-Using \texttt{matplot} it is apparent that the simluated species data are now far more relalistic (Figure~\ref{fig:example1-plot-nb-simulations})
+Using \texttt{plot} it is apparent that the simluated species data are now far more relalistic (Figure~\ref{fig:example1-plot-nb-simulations})
 
 <<example1-plot-nb-simulations, fig.cap = "Simulated species abundance with negative binomial errors from Gaussian response curves along a hypothetical pH gradient", fig.height = 5>>=
-matplot(locs, simnb, lty = "solid", type = "p", pch = 1:10, cex = 0.8,
-        xlab = "pH", ylab = "Abundance")
+plot(simnb, lty = "solid", type = "p", pch = 1:10, cex = 0.8,
+     xlab = "pH", ylab = "Abundance")
 @
 
 \subsubsection{Generalised beta responses along a single gradient}
@@ -233,16 +235,16 @@ mu <- coenocline(locs, responseModel = "beta", params = pars, expectation = TRUE
 As before \texttt{mu} is a matrix with one column per species
 
 <<example2-head>>=
-head(mu)
-@ 
+mu
+@
 
 and as such we can use \texttt{matplot} to draw the species responses
 
 <<example2-beta-plot-expectations, fig.cap = "Generalised beta function species response curves along a hypothetical environmental gradient recreating Figure 2 in Minchin (1987).", fig.height = 5>>=
-matplot(locs, mu, lty = "solid", type = "l", xlab = "Gradient", ylab = "Abundance")
+plot(mu, lty = "solid", type = "l", xlab = "Gradient", ylab = "Abundance")
 @
 
-Figure~\ref{example2-beta-plot-expectations} is a good facsimile of figure 2 in \citet{Minchin1987}.
+Figure~\ref{fig:example2-beta-plot-expectations} is a good facsimile of figure 2 in \citet{Minchin1987}.
 
 \subsubsection{Gaussian response along two gradients}
 In this example I illustrate how to simulate species abundance in an environment comprising two gradients. Parameters for the simulation are defined first, including the number of species and samples required, followed by definitions of the gradient units and lengths, species optima, and tolerances for each gradient, and the maximal abundance ($h$).
@@ -271,9 +273,9 @@ pars <- list(px = par1, py = par2)                # put parameters into a list
 locs <- expand.grid(x = loc1, y = loc2)           # put gradient locations together
 @
 
-Notice how the parameter sets for each gradient are individual matrices which are combined in a list, \code{pars}, ready for use. Also different this time is the \code{expand.grid()} call which is used to generate all pairwise combinations of the locations on the two gradients. This has the effect of creating a coordinate pair on the two gradients at which we'll evaluate the response curves. In effect this creates a grid of points over the gradient space.
+Notice how the parameter sets for each gradient are individual matrices which are combined in a list, \texttt{pars}, ready for use. Also different this time is the \texttt{expand.grid()} call which is used to generate all pairwise combinations of the locations on the two gradients. This has the effect of creating a coordinate pair on the two gradients at which we'll evaluate the response curves. In effect this creates a grid of points over the gradient space.
 
-Having set up the parameters, the call to \code{coenocline()} is the same as before, except now we specify a degree of correlation between the two gradients via \code{extraParams = list(corr = 0.5)}
+Having set up the parameters, the call to \texttt{coenocline()} is the same as before, except now we specify a degree of correlation between the two gradients via \texttt{extraParams = list(corr = 0.5)}
 
 <<example3-expectations>>=
 mu2d <- coenocline(locs, responseModel = "gaussian",
@@ -281,21 +283,18 @@ mu2d <- coenocline(locs, responseModel = "gaussian",
                    expectation = TRUE)
 @
 
-\code{mu2d} now contains a matrix of expected species abundances, one column per species as before. Because of the way the \code{expand.grid()} function works, the ordering of species abudances in each column has the first gradient locations varying fastest --- the locations on the first gradient are repeated in order for each location on the second gradient
+\texttt{mu2d} now contains a matrix of expected species abundances, one column per species as before. Because of the way the \texttt{expand.grid()} function works, the ordering of species abudances in each column has the first gradient locations varying fastest --- the locations on the first gradient are repeated in order for each location on the second gradient
 
 <<example3-head-locs>>=
 head(locs)
 @
-As a result, we can reshape the abundances for a single species into a matrix reflecting the grid of locations over the gradient space via a simple \code{matrix()} call, setting the number of columns in the resultant matrix equal to the number of gradient locations in the simulation. By way of illustration, this approach is used to prepare the expected abundances for four of the species in \code{mu2d} for plotting via the \code{persp()} plotting function
+As a result, we can reshape the abundances for a single species into a matrix reflecting the grid of locations over the gradient space via a simple \texttt{matrix()} call, setting the number of columns in the resultant matrix equal to the number of gradient locations in the simulation. Thankfully this is taken care of for you in the \texttt{persp()} method\footnote{The \texttt{plot()} methods for class \texttt{"coenocline"} will use the \texttt{persp()} if you try to plot an object with two gradients.}. The method will draw perspective plots for all species in the simulation; it is keft to the user to handle how these should be displayed on the current graphics device. By way of illustration, I plot the expected abundance for four of the species in \texttt{mu2d}
 
 <<example3-persp-plots, fig.cap = "Bivariate Gaussian species responses for four selected species.">>=
 layout(matrix(1:4, ncol = 2))
 op <- par(mar = rep(1, 4))
-for (i in c(2,8,13,19)) {
-    persp(loc1, loc2, matrix(mu2d[, i], ncol = length(loc2)),
-          ticktype = "detailed", zlab = "Abundance",
-          theta = 45, phi = 30)
-}
+persp(mu2d, species = c(2, 8, 13, 19), ticktype = "detailed",
+      zlab = "Abundance")
 par(op)
 layout(1)
 @
@@ -315,11 +314,8 @@ The resulting simulated counts for the same four selected species are shown in F
 <<example3-persp-plots2, fig.cap = "Simulated counts using negative binomial errors from bivariate Gaussian species responses for four selected species.">>=
 layout(matrix(1:4, ncol = 2))
 op <- par(mar = rep(1, 4))
-for (i in c(2,8,13,19)) {
-    persp(loc1, loc2, matrix(sim2d[, i], ncol = length(loc2)),
-          ticktype = "detailed", zlab = "Abundance",
-          theta = 45, phi = 30)
-}
+persp(sim2d, species = c(2, 8, 13, 19), ticktype = "detailed",
+      zlab = "Abundance")
 par(op)
 layout(1)
 @
@@ -338,6 +334,6 @@ This vignette was created using the following R and add-on package versions
 
 <<sessionInfo, results = "asis", echo = FALSE>>=
 toLatex(sessionInfo())
-@ 
+@
 
 \end{document}

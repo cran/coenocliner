@@ -1,6 +1,6 @@
 
-R version 3.1.0 Patched (2014-05-26 r65771) -- "Spring Dance"
-Copyright (C) 2014 The R Foundation for Statistical Computing
+R version 3.2.0 Patched (2015-05-01 r68289) -- "Full of Ingredients"
+Copyright (C) 2015 The R Foundation for Statistical Computing
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -21,7 +21,7 @@ Type 'q()' to quit R.
 > source(file.path(R.home("share"), "R", "examples-header.R"))
 > options(warn = 1)
 > library('coenocliner')
-This is coenocliner 0.1-0
+This is coenocliner 0.2-0
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > cleanEx()
@@ -64,7 +64,7 @@ This is coenocliner 0.1-0
 +                 params = cbind(opt = opt, tol = tol, h = h),
 +                 countModel = "poisson",
 +                 expectation = TRUE)
-> matplot(x, y, type = "l", lty = "solid")
+> plot(y, type = "l", lty = "solid")
 > 
 > ## Bernoulli distribution (occurrence)
 > ## ===================================
@@ -86,8 +86,8 @@ This is coenocliner 0.1-0
 +                  params = cbind(opt = opt, tol = tol, h = h),
 +                  countModel = "bernoulli", expectation = TRUE)
 > ## plot
-> matplot(y, type = "p", pch = 1) # a random realisation
-> matlines(pi, lty = "solid")     # probability of occurrence
+> plot(y, type = "p", pch = 1) # a random realisation
+> lines(pi, lty = "solid")     # probability of occurrence
 > 
 > ## Correlated bivariate Gaussian response, two species
 > ## ===================================================
@@ -111,9 +111,9 @@ This is coenocliner 0.1-0
 > ## rows. Need to reshape each species (column) vector into a matrix
 > ## with as many rows as length(x) (number of gradient locations) and
 > ## fill *column*-wise (the default)
-> persp(x, y, matrix(sim[,1], ncol = length(x)),             # spp1
+> persp(x, y, matrix(sim[,1], ncol = length(x)), # spp1
 +       theta = 45, phi = 30)
-> persp(x, y, matrix(sim[,2], ncol = length(x)),             # spp2
+> persp(x, y, matrix(sim[,2], ncol = length(x)), # spp2
 +       theta = 45, phi = 30)
 > 
 > ## Poisson counts along two correlated gradients, Gaussian response
@@ -157,8 +157,8 @@ This is coenocliner 0.1-0
 [10000,]    0    0    0    0   33
 > 
 > ## Visualise one species' bivariate count data
-> persp(x1, x2, matrix(y[,3], ncol = length(x1)), ticktype = "detailed",
-+       zlab = "Abundance")
+> persp(x1, x2, matrix(y[,3], ncol = length(x1)),
++       ticktype = "detailed", zlab = "Abundance")
 > 
 > ## Recreate beta responses in Fig. 2 of Minchin (1987)
 > ## ===================================================
@@ -184,26 +184,26 @@ This is coenocliner 0.1-0
 [4,]    0    0   57    0    5    0
 [5,]    0    0   54    0    8    0
 [6,]    0    0   62    0    7    0
-> matplot(y, type = "l", lty = "solid")
+> plot(y, type = "l", lty = "solid")
 > 
 > y <- coenocline(x, responseModel = "beta",
 +                 params = params,
 +                 countModel = "poisson", expectation = TRUE)
-> matplot(y, type = "l", lty = "solid")
+> plot(y, type = "l", lty = "solid")
 > 
-> ## Zero-inflated Poisson, constant gamma
-> ## =====================================
+> ## Zero-inflated Poisson, constant zero-inflation
+> ## ==============================================
 > 
 > y <- coenocline(x, responseModel = "beta", params = params,
-+                 countModel = "ZIP", countParams = list(gamma = 0))
-> matplot(y, type = "l", lty = "solid")
++                 countModel = "ZIP", countParams = list(zprobs = 0.2))
+> plot(y, type = "l", lty = "solid")
 > 
-> ## Zero-inflated Negative binomial, constant gamma
+> ## Zero-inflated Negative binomial, constant zero-inflation
 > y <- coenocline(x, responseModel = "beta",
 +                 params = params,
 +                 countModel = "ZINB",
-+                 countParams = list(alpha = 0.75, gamma = 0))
-> matplot(y, type = "l", lty = "solid")
++                 countParams = list(alpha = 0.75, zprobs = 0.2))
+> plot(y, type = "l", lty = "solid")
 > 
 > ## Binomial counts, constant size (m) of 100
 > ## =========================================
@@ -214,7 +214,7 @@ This is coenocliner 0.1-0
 +                 params = params,
 +                 countModel = "binomial",
 +                 countParams = list(size = 100))
-> matplot(y, type = "l", lty = "solid")
+> plot(y, type = "l", lty = "solid")
 > 
 > ## Beta-Binomial counts, constant size (m) of 100
 > ## ==============================================
@@ -225,7 +225,51 @@ This is coenocliner 0.1-0
 +                 params = params,
 +                 countModel = "betabinomial",
 +                 countParams = list(size = 100, theta = 0.1))
-> matplot(y, type = "l", lty = "solid")
+> plot(y, type = "l", lty = "solid")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("coenocliner-internal")
+> ### * coenocliner-internal
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: prettyHead
+> ### Title: Pretty Display of a Matrix or Data Frame
+> ### Aliases: prettyHead
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> x <- seq(from = 4, to = 6, length = 30)
+> opt <- seq(4, 7, length = 100)
+> tol <- rep(0.25, 100)
+> h <- rep(20, 100)
+> 
+> ## simulate
+> set.seed(1)
+> y <- coenocline(x, responseModel = "gaussian",
++                 params = cbind(opt = opt, tol = tol, h = h),
++                 countModel = "poisson")
+> 
+> prettyHead(y)
+
+   Sp1 Sp2 Sp3 Sp4 Sp5 Sp6 Sp7 Sp8 Sp9 Sp10 Sp11 Sp12 Sp13 Sp14 Sp15 Sp16 Sp17
+1   17  18  19  27  12  23   8  10  15    9    6    7    4    4    4    4    4
+2   25  21  24  18  20  21  16  18  14   14    9   11    8   10    4    5    6
+3   22  18  22  15  19  14  18  12  14   20   12   17   17   12    5    8   11
+4   15  18  16  12  14  20  18  15  17   28   16   10   16   16   15   15    9
+5   15  12  12  24  14  21  20  16  18   24   21   11   21   20   15   11   10
+6   10  10  12  11  17  17  15  20  19   24   27   21   24   14   24   26    9
+7    5   6   9  11  12   8  11  14  13   11   24   18   20   23   16   18   26
+8    4   6   2   5   6   6  14  10  16   11   14   23   14   26   27   14   24
+9    6   2   2   4   2   5   4   5  12    5    4    8   10   17   16   18   18
+10   0   0   0   1   2   4   4   4   8    7    8    9    9   11    9   18   11
+:    :   :   :   :   :   :   :   :   :    :    :    :    :    :    :    :    :
+
+Counts for 83 species not shown.
+
 > 
 > 
 > 
@@ -264,6 +308,147 @@ This is coenocliner 0.1-0
 [4,] 4 25 50 30   0.1   0.1
 [5,] 5 25 50 30   0.1   0.1
 [6,] 6 25 50 30   0.1   0.1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("locations")
+> ### * locations
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: locations
+> ### Title: Extract Gradient Locations
+> ### Aliases: locations locations.default
+> 
+> ### ** Examples
+> 
+> ## Poisson counts along a single gradient, Gaussian response
+> ## =========================================================
+> 
+> x <- seq(from = 4, to = 6, length = 100)
+> opt <- c(3.75, 4, 4.55, 5, 5.5) + 0.5
+> tol <- rep(0.25, 5)
+> h <- rep(20, 5)
+> 
+> ## simulate
+> set.seed(1)
+> y <- coenocline(x, responseModel = "gaussian",
++                 params = cbind(opt = opt, tol = tol, h = h),
++                 countModel = "poisson")
+> head(locations(y))
+[1] 4.000000 4.020202 4.040404 4.060606 4.080808 4.101010
+> 
+> 
+> 
+> cleanEx()
+> nameEx("persp.coenocline")
+> ### * persp.coenocline
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: persp.coenocline
+> ### Title: Perspective Plot of Species Simulations Along Gradients
+> ### Aliases: persp.coenocline
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> ## Poisson counts along two correlated gradients, Gaussian response
+> ## ================================================================
+> 
+> set.seed(1)
+> N <-  40
+> x1 <- seq(from = 4, to = 6, length = N)
+> opt1 <- seq(4, 6, length = 5)
+> tol1 <- rep(0.25, 5)
+> x2 <- seq(from = 2, to = 20, length = N)
+> opt2 <- seq(2, 20, length = 5)
+> tol2 <- rep(1, 5)
+> h <- rep(30, 5)
+> xy <- expand.grid(x = x1, y = x2)
+> 
+> set.seed(1)
+> params <- list(px = list(opt = opt1, tol = tol1, h = h),
++                py = list(opt = opt2, tol = tol2))
+> y <- coenocline(xy,
++                 responseModel = "gaussian",
++                 params = params,
++                 extraParams = list(corr = 0.5),
++                 countModel = "poisson")
+> 
+> ## perspective plot(s) of simulated counts
+> layout(matrix(1:6, ncol = 3))
+> op <- par(mar = rep(1, 4))
+> persp(y)
+> par(op)
+> layout(1)
+> 
+> ## as before but now just expectations
+> y <- coenocline(xy,
++                 responseModel = "gaussian",
++                 params = params,
++                 extraParams = list(corr = 0.5),
++                 countModel = "poisson",
++                 expectation = TRUE)
+> 
+> ## perspective plots of response curves
+> layout(matrix(1:6, ncol = 3))
+> op <- par(mar = rep(1, 4))
+> persp(y)
+> par(op)
+> layout(1)
+> 
+> ## Same plots generated using the `plot` method
+> layout(matrix(1:6, ncol = 3))
+> op <- par(mar = rep(1, 4))
+> persp(y)
+> par(op)
+> layout(1)
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("plot.coenocline")
+> ### * plot.coenocline
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot.coenocline
+> ### Title: Plot species simulations along gradients
+> ### Aliases: lines.coenocline plot.coenocline
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> ## Poisson counts along a single gradient, Gaussian response
+> ## =========================================================
+> 
+> x <- seq(from = 4, to = 6, length = 100)
+> opt <- c(3.75, 4, 4.55, 5, 5.5) + 0.5
+> tol <- rep(0.25, 5)
+> h <- rep(20, 5)
+> 
+> ## simulate
+> set.seed(1)
+> y <- coenocline(x, responseModel = "gaussian",
++                 params = cbind(opt = opt, tol = tol, h = h),
++                 countModel = "poisson")
+> head(y)
+     [,1] [,2] [,3] [,4] [,5]
+[1,]    9    3    0    0    0
+[2,]   17    8    0    0    0
+[3,]   18    4    0    0    0
+[4,]   16    5    0    0    0
+[5,]   21    5    0    0    0
+[6,]   19    4    0    0    0
+> 
+> y <- coenocline(x, responseModel = "gaussian",
++                 params = cbind(opt = opt, tol = tol, h = h),
++                 countModel = "poisson",
++                 expectation = TRUE)
+> plot(y, type = "l", lty = "solid")
 > 
 > 
 > 
@@ -393,7 +578,7 @@ Parameters:
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.569 0.014 0.588 0 0 
+Time elapsed:  1.467 0.041 1.516 0 0 
 > grDevices::dev.off()
 null device 
           1 

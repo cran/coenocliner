@@ -16,9 +16,12 @@
 ##'   \item Poisson,
 ##'   \item Negative binomial,
 ##'   \item Bernoulli,
+##'   \item Binomial,
 ##'   \item Beta-Binomial,
-##'   \item Zero-inflated Poisson, and
-##'   \item Zero-inflated Negative binomial
+##'   \item Zero-inflated Poisson,
+##'   \item Zero-inflated Negative binomial,
+##'   \item Zero-inflated Binomial, and
+##'   \item Zero-inflated Beta-Binomial
 ##' }
 ##'
 ##' Some distributions may need additional parameters beyond the expectation; an example is the \eqn{\alpha}{alpha} parameter of (one parameterisation of) the negative binomial distribution. These parameters are specied via the list \code{countParams}.
@@ -31,7 +34,16 @@
 ##' @param countParams a list of additional parameters required to specify the distribution. An example is the parameter \eqn{\alpha}{alpha} in the negative binomial distribution. Components need to be named.
 ##' @param expectation logical; should the expectation (mean) response be returned (\code{TRUE})? If \code{FALSE} random counts or occurrences are generated using random draws from a suitably parameterised distribution, as stated in \code{countModel}.
 ##'
-##' @return a matrix of simulated count or occurrence data, one row per gradient location, one column per species.
+##' @return a matrix of simulated count or occurrence data, one row per gradient location, one column per species. The object is of class \code{"coenocline"}, which inherits from the \code{"matrix"} class.
+##'
+##' Additional attributes attached to the matrix are:
+##'
+##' \describe{
+##'   \item{\code{locations}}{ the gradient locations at which response curves were evaluated or for which counts were simulated.}
+##'   \item{\code{expectations}}{ the passed value of the \code{expection}.}
+##'   \item{\code{responseModel}}{ the species response model.}
+##'   \item{\code{countModel}}{ the count distribution used to simulate counts from.}
+##' }
 ##'
 ##' @author Gavin L. Simpson
 ##'
@@ -60,7 +72,7 @@
 ##'                 params = cbind(opt = opt, tol = tol, h = h),
 ##'                 countModel = "poisson",
 ##'                 expectation = TRUE)
-##' matplot(x, y, type = "l", lty = "solid")
+##' plot(y, type = "l", lty = "solid")
 ##'
 ##' ## Bernoulli distribution (occurrence)
 ##' ## ===================================
@@ -75,8 +87,8 @@
 ##'                  params = cbind(opt = opt, tol = tol, h = h),
 ##'                  countModel = "bernoulli", expectation = TRUE)
 ##' ## plot
-##' matplot(y, type = "p", pch = 1) # a random realisation
-##' matlines(pi, lty = "solid")     # probability of occurrence
+##' plot(y, type = "p", pch = 1) # a random realisation
+##' lines(pi, lty = "solid")     # probability of occurrence
 ##'
 ##' ## Correlated bivariate Gaussian response, two species
 ##' ## ===================================================
@@ -100,9 +112,9 @@
 ##' ## rows. Need to reshape each species (column) vector into a matrix
 ##' ## with as many rows as length(x) (number of gradient locations) and
 ##' ## fill *column*-wise (the default)
-##' persp(x, y, matrix(sim[,1], ncol = length(x)),             # spp1
+##' persp(x, y, matrix(sim[,1], ncol = length(x)), # spp1
 ##'       theta = 45, phi = 30)
-##' persp(x, y, matrix(sim[,2], ncol = length(x)),             # spp2
+##' persp(x, y, matrix(sim[,2], ncol = length(x)), # spp2
 ##'       theta = 45, phi = 30)
 ##'
 ##' ## Poisson counts along two correlated gradients, Gaussian response
@@ -132,8 +144,8 @@
 ##' tail(y)
 ##'
 ##' ## Visualise one species' bivariate count data
-##' persp(x1, x2, matrix(y[,3], ncol = length(x1)), ticktype = "detailed",
-##'       zlab = "Abundance")
+##' persp(x1, x2, matrix(y[,3], ncol = length(x1)),
+##'       ticktype = "detailed", zlab = "Abundance")
 ##'
 ##' ## Recreate beta responses in Fig. 2 of Minchin (1987)
 ##' ## ===================================================
@@ -152,26 +164,26 @@
 ##'                 params = params,
 ##'                 countModel = "poisson")
 ##' head(y)
-##' matplot(y, type = "l", lty = "solid")
+##' plot(y, type = "l", lty = "solid")
 ##'
 ##' y <- coenocline(x, responseModel = "beta",
 ##'                 params = params,
 ##'                 countModel = "poisson", expectation = TRUE)
-##' matplot(y, type = "l", lty = "solid")
+##' plot(y, type = "l", lty = "solid")
 ##'
-##' ## Zero-inflated Poisson, constant gamma
-##' ## =====================================
+##' ## Zero-inflated Poisson, constant zero-inflation
+##' ## ==============================================
 ##'
 ##' y <- coenocline(x, responseModel = "beta", params = params,
-##'                 countModel = "ZIP", countParams = list(gamma = 0))
-##' matplot(y, type = "l", lty = "solid")
+##'                 countModel = "ZIP", countParams = list(zprobs = 0.2))
+##' plot(y, type = "l", lty = "solid")
 ##'
-##' ## Zero-inflated Negative binomial, constant gamma
+##' ## Zero-inflated Negative binomial, constant zero-inflation
 ##' y <- coenocline(x, responseModel = "beta",
 ##'                 params = params,
 ##'                 countModel = "ZINB",
-##'                 countParams = list(alpha = 0.75, gamma = 0))
-##' matplot(y, type = "l", lty = "solid")
+##'                 countParams = list(alpha = 0.75, zprobs = 0.2))
+##' plot(y, type = "l", lty = "solid")
 ##'
 ##' ## Binomial counts, constant size (m) of 100
 ##' ## =========================================
@@ -182,7 +194,7 @@
 ##'                 params = params,
 ##'                 countModel = "binomial",
 ##'                 countParams = list(size = 100))
-##' matplot(y, type = "l", lty = "solid")
+##' plot(y, type = "l", lty = "solid")
 ##'
 ##' ## Beta-Binomial counts, constant size (m) of 100
 ##' ## ==============================================
@@ -193,20 +205,21 @@
 ##'                 params = params,
 ##'                 countModel = "betabinomial",
 ##'                 countParams = list(size = 100, theta = 0.1))
-##' matplot(y, type = "l", lty = "solid")
+##' plot(y, type = "l", lty = "solid")
 `coenocline` <- function(x,
                          responseModel = c("gaussian","beta"),
                          params,
                          extraParams = NULL,
                          countModel = c("poisson", "negbin", "bernoulli", "binary",
-                                        "binomial", "betabinomial", "ZIP", "ZINB"),
+                                        "binomial", "betabinomial", "ZIP", "ZINB",
+                                        "ZIB", "ZIBB"),
                          countParams = NULL,
                          expectation = FALSE) {
-    responseModel <- match.arg(responseModel)
+    responseModel <- rModel <- match.arg(responseModel)
     responseModel <- switch(responseModel,
                             gaussian = Gaussian,
                             beta     = Beta)
-    countModel <- match.arg(countModel)
+    countModel <- cModel <- match.arg(countModel)
     countModel <- switch(countModel,
                          poisson = Poisson,
                          negbin  = NegBin,
@@ -215,7 +228,9 @@
                          binomial = Binomial,
                          betabinomial = BetaBinomial,
                          ZIP = ZIP,
-                         ZINB = ZINB)
+                         ZINB = ZINB,
+                         ZIB = ZIB,
+                         ZIBB = ZIBB)
 
     ## x needs to be a vector, or for bivariate;
     ##   a list of 2 vectors, or a matrix of 2 columns
@@ -237,6 +252,7 @@
                             params = params, extraParams = extraParams,
                             countModel = countModel, countParams = countParams,
                             expectation = expectation)
+        x <- cbind(X, Y)
     } else {
         sim <- coenocline1d(x,
                             responseModel = responseModel,
@@ -244,6 +260,11 @@
                             countModel = countModel, countParams = countParams,
                             expectation = expectation)
     }
+    attr(sim, "locations") <- x
+    attr(sim, "responseModel") <- rModel
+    attr(sim, "countModel") <- cModel
+    attr(sim, "expectation") <- expectation
+    class(sim) <- c("coenocline", "matrix")
     sim
 }
 
@@ -351,3 +372,17 @@
     sim
 }
 
+##' @export
+`print.coenocline` <- function(x, zapsmall = TRUE, ...) {
+    dims <- dim(x)
+    nspp <- dims[2]
+    nlocs <- dims[1]
+
+    msg <- paste("Coenocline simulation of", nspp, "species at",
+                 nlocs, "gradient locations")
+    writeLines(strwrap(msg, prefix = "\n"), sep = "\n")
+
+    print(prettyHead(x, zapsmall = zapsmall, ...))
+
+    invisible(x)
+}
