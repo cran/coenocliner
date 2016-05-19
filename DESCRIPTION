@@ -1,8 +1,8 @@
 Package: coenocliner
 Type: Package
 Title: Coenocline Simulation
-Version: 0.2-1
-Date: 2016-02-27
+Version: 0.2-2
+Date: 2016-05-17
 Authors@R: c(person(given = c("Gavin", "L."),
     family = "Simpson",
     role = c("aut","cre"),
@@ -25,9 +25,9 @@ BugReports: https://github.com/gavinsimpson/coenocliner/issues
 ByteCompile: true
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2016-02-27 20:50:37 UTC; gavin
+Packaged: 2016-05-18 20:49:14.839 UTC; gavin
 Author: Gavin L. Simpson [aut, cre],
   Jari Oksanen [ctb],
   Francisco Rodriguez-Sanchez [ctb]
 Repository: CRAN
-Date/Publication: 2016-02-28 09:59:30
+Date/Publication: 2016-05-19 05:46:41

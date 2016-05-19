@@ -1,13 +1,13 @@
 ##' @title Wrappers to random number generators for use with coenocliner
 ##'
-##' @description These functions are simple wrappers around existing random number generators in R to provide stochasic count data for simulated species.
+##' @description These functions are simple wrappers around existing random number generators in R to provide stochastic count data for simulated species.
 ##'
 ##' @references Bolker, B.M. (2008) \emph{Ecological Models and Data
 ##' in R.} Princeton University Press.
 ##'
 ##' @param n the number of random draws, equal to number of species times the number of gradient locations.
 ##' @param mu the mean or expectation of the distribution. For \code{Bernoulli}, \code{Binomial}, and \code{BetaBinomial()} this is the probability of occurrence as given by the response function.
-##' @param alpha numeric; parameter for the negative binomial distribution.
+##' @param alpha numeric; dispersion parameter for the negative binomial distribution. May be a vector of length \code{length(mu)}. The NB2 parametrization of the negative binomial is used here, in which \eqn{\alpha} is positively related to the amount of extra dispersion in the simulated data. As such, where \eqn{\alpha = 0}, we would have a Poisson distribution. \code{alpha} can be supplied a value of \code{0}, in which case \code{NegBin} and \code{ZINB} return random draws from the Poisson or zero-inflated Poisson distributions, respectively. Negative values of \code{alpha} are not allowed and will generate an error.
 ##'
 ##' @return a vector of random draws from the stated distribution.
 ##'
@@ -21,7 +21,12 @@
 ##'
 ##' @importFrom stats rpois rgamma
 `NegBin` <- function(n, mu, alpha) {
-    mu <- mu * rgamma(n, shape = alpha, rate = 1/alpha)
+    if (any(alpha < 0L)) {
+        stop("Negative values of 'alpha' are not supported")
+    }
+    alpha <- rep(alpha, length.out = length(mu))
+    ind <- alpha > 0L
+    mu[ind] <- mu[ind] * rgamma(sum(ind), shape = 1/alpha[ind], rate = 1/alpha[ind])
     rpois(n, lambda = mu)
 }
 
@@ -67,17 +72,22 @@
 ##' @param zprobs numeric; zero-inflation parameter giving the proportion of extraneous zeros. Must be in range \eqn{0 \dots 1}{0 to 1}.
 ##' @importFrom stats runif rpois
 `ZIP` <- function(n, mu, zprobs) {
-    ifelse(runif(n) > zprobs, rpois(n, lambda = mu), 0)
+    ifelse(runif(n) > zprobs, rpois(n, lambda = mu), 0L)
 }
 
 ##' @rdname distributions
 ##'
 ##' @importFrom stats rpois rgamma runif
 `ZINB` <- function(n, mu, alpha, zprobs) {
+    if (any(alpha < 0L)) {
+        stop("Negative values of 'alpha' are not supported")
+    }
+    alpha <- rep(alpha, length.out = length(mu))
+    ind <- alpha > 0L
+    mu[ind] <- mu[ind] * rgamma(sum(ind), shape = 1/alpha[ind], rate = 1/alpha[ind])
     ifelse(runif(n) > zprobs,
-           rpois(n, lambda = mu *
-                 rgamma(n, shape = alpha, rate = 1/alpha)),
-           0)
+           rpois(n, lambda = mu),
+           0L)
 }
 
 ##' @rdname distributions
@@ -87,7 +97,7 @@
 `ZIB` <- function(n, mu, size, zprobs) {
     ifelse(runif(n) > zprobs,
            rbinom(n, size = size, prob = mu),
-           0)
+           0L)
 }
 
 ##' @rdname distributions
@@ -97,5 +107,5 @@
 `ZIBB` <- function(n, mu, size, theta, zprobs) {
     ifelse(runif(n) > zprobs,
            BetaBinomial(n, mu = mu, size = size, theta = theta),
-           0)
+           0L)
 }
