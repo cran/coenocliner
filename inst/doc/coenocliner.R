@@ -1,39 +1,39 @@
-## ----prelim, echo = FALSE, results = "hide"------------------------------
+## ----prelim, echo = FALSE, results = "hide"-----------------------------------
 library("knitr")
 opts_chunk$set(fig.lp = "fig:", size = "small", out.width = ".7\\linewidth",
                fig.align = "center", fig.show = "hold")
 
-## ----load-library--------------------------------------------------------
+## ----load-library-------------------------------------------------------------
 library("coenocliner")
 
-## ----show-matrix-grad-locs-----------------------------------------------
+## ----show-matrix-grad-locs----------------------------------------------------
 xy <- cbind(x = seq(from = 4, to = 7, length.out = 100),
             y = seq(from = 1, to = 100, length.out = 100))
 
-## ----show-list-grad-locs-------------------------------------------------
+## ----show-list-grad-locs------------------------------------------------------
 xy <- list(x = seq(from = 4, to = 6, length.out = 100),
            y = seq(from = 1, to = 100, length.out = 100))
 
-## ----show-gaussian-params------------------------------------------------
+## ----show-gaussian-params-----------------------------------------------------
 showParams("gaussian")
 
-## ----param-example-------------------------------------------------------
+## ----param-example------------------------------------------------------------
 opt <- c(4,5,6)
 tol <- rep(0.25, 3)
 h <- c(10,20,30)
 parm <- cbind(opt = opt, tol = tol, h = h)     # matrix form
 parl <- list(opt = opt, tol = tol, h = h)      # list form
 
-## ----param-example-2-----------------------------------------------------
+## ----param-example-2----------------------------------------------------------
 opty <- c(25, 50, 75)
 tol <- c(5, 10, 20)
 pars <- list(px = parm,
              py = cbind(opt = opty, tol = tol))
 
-## ----count-models, echo = FALSE------------------------------------------
+## ----count-models, echo = FALSE-----------------------------------------------
 c("poisson", "negbin", "bernoulli", "binary", "binomial", "betabinomial", "ZIP", "ZINB", "ZIB", "ZIBB")
 
-## ----example1-params-----------------------------------------------------
+## ----example1-params----------------------------------------------------------
 set.seed(2)
 M <- 20                                    # number of species
 ming <- 3.5                                # gradient minimum...
@@ -44,11 +44,11 @@ tol  <- rep(0.25, M)                       # species tolerances
 h    <- ceiling(rlnorm(M, meanlog = 3))    # max abundances
 pars <- cbind(opt = opt, tol = tol, h = h) # put in a matrix
 
-## ----example1-expectations-----------------------------------------------
+## ----example1-expectations----------------------------------------------------
 mu <- coenocline(locs, responseModel = "gaussian", params = pars,
                  expectation = TRUE)
 
-## ----example1-head-expectations------------------------------------------
+## ----example1-head-expectations-----------------------------------------------
 class(mu)
 dim(mu)
 mu
@@ -56,7 +56,7 @@ mu
 ## ----example1-plot-expectations, fig.cap = "Gaussian species response curves along a hypothetical pH gradient", fig.height = 5----
 plot(mu, lty = "solid", type = "l", xlab = "pH", ylab = "Abundance")
 
-## ----example1-sim--------------------------------------------------------
+## ----example1-sim-------------------------------------------------------------
 simp <- coenocline(locs, responseModel = "gaussian", params = pars,
                    countModel = "poisson")
 
@@ -64,7 +64,7 @@ simp <- coenocline(locs, responseModel = "gaussian", params = pars,
 plot(simp, lty = "solid", type = "p", pch = 1:10, cex = 0.8,
      xlab = "pH", ylab = "Abundance")
 
-## ----example1-nb-sim-----------------------------------------------------
+## ----example1-nb-sim----------------------------------------------------------
 simnb <- coenocline(locs, responseModel = "gaussian", params = pars,
                     countModel = "negbin", countParams = list(alpha = 0.5))
 
@@ -72,7 +72,7 @@ simnb <- coenocline(locs, responseModel = "gaussian", params = pars,
 plot(simnb, lty = "solid", type = "p", pch = 1:10, cex = 0.8,
      xlab = "pH", ylab = "Abundance")
 
-## ----example2-beta-pars--------------------------------------------------
+## ----example2-beta-pars-------------------------------------------------------
 A0    <- c(5,4,7,5,9,8) * 10               # max abundance
 m     <- c(25,85,10,60,45,60)              # location on gradient of modal abundance
 r     <- c(3,3,4,4,6,5) * 10               # species range of occurence on gradient
@@ -82,16 +82,16 @@ locs  <- 1:100                             # gradient locations
 pars  <- list(m = m, r = r, alpha = alpha,
               gamma = gamma, A0 = A0)      # species parameters, in list form
 
-## ----example2-beta-expectations------------------------------------------
+## ----example2-beta-expectations-----------------------------------------------
 mu <- coenocline(locs, responseModel = "beta", params = pars, expectation = TRUE)
 
-## ----example2-head-------------------------------------------------------
+## ----example2-head------------------------------------------------------------
 mu
 
 ## ----example2-beta-plot-expectations, fig.cap = "Generalised beta function species response curves along a hypothetical environmental gradient recreating Figure 2 in Minchin (1987).", fig.height = 5----
 plot(mu, lty = "solid", type = "l", xlab = "Gradient", ylab = "Abundance")
 
-## ----example3-params-----------------------------------------------------
+## ----example3-params----------------------------------------------------------
 set.seed(10)
 N <- 30                                           # number of samples
 M <- 20                                           # number of species
@@ -114,12 +114,12 @@ par2 <- cbind(opt = opt2, tol = tol2)             # put in a matrix
 pars <- list(px = par1, py = par2)                # put parameters into a list
 locs <- expand.grid(x = loc1, y = loc2)           # put gradient locations together
 
-## ----example3-expectations-----------------------------------------------
+## ----example3-expectations----------------------------------------------------
 mu2d <- coenocline(locs, responseModel = "gaussian",
                    params = pars, extraParams = list(corr = 0.5),
                    expectation = TRUE)
 
-## ----example3-head-locs--------------------------------------------------
+## ----example3-head-locs-------------------------------------------------------
 head(locs)
 
 ## ----example3-persp-plots, fig.cap = "Bivariate Gaussian species responses for four selected species."----
@@ -130,7 +130,7 @@ persp(mu2d, species = c(2, 8, 13, 19), ticktype = "detailed",
 par(op)
 layout(1)
 
-## ----example3-nb-sim-----------------------------------------------------
+## ----example3-nb-sim----------------------------------------------------------
 sim2d <- coenocline(locs, responseModel = "gaussian",
                     params = pars, extraParams = list(corr = 0.5),
                     countModel = "negbin", countParams = list(alpha = 1))
@@ -143,6 +143,6 @@ persp(sim2d, species = c(2, 8, 13, 19), ticktype = "detailed",
 par(op)
 layout(1)
 
-## ----sessionInfo, results = "asis", echo = FALSE-------------------------
+## ----sessionInfo, results = "asis", echo = FALSE------------------------------
 toLatex(sessionInfo())
 
